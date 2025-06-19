@@ -1,0 +1,48 @@
+# version: '3.8' # Versão da especificação do Docker Compose
+# Remover a linha 'version: '3.8'' pois está obsoleta e deu o aviso: WARN[0000] /home/denilsonbj/projetos/docker_teste/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+
+# Define os serviços (containers) que compõem sua aplicação
+services:
+  # Serviço para a aplicação Python
+  app:
+    build: . # Indica para construir a imagem Docker a partir do Dockerfile no diretório atual
+    # Define as variáveis de ambiente que serão passadas para o container 'app'
+    # São as mesmas variáveis que o app/main.py espera
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db # 'db' é o nome do serviço do PostgreSQL definido abaixo
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    # Garante que o serviço 'app' só inicie depois que o serviço 'db' estiver pronto
+    depends_on:
+      db:
+        condition: service_healthy # Espera o PostgreSQL estar saudável
+
+  # Serviço para o banco de dados PostgreSQL
+  db:
+    image: postgres:13-alpine # Usa uma imagem oficial do PostgreSQL, versão 13, baseado em Alpine
+    restart: always # O container sempre será reiniciado se parar
+    # Define as variáveis de ambiente para configurar o PostgreSQL
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB} # Nome do banco de dados
+      POSTGRES_USER: ${POSTGRES_USER} # Usuário do banco de dados
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # Senha do usuário
+    # Mapeia portas do container para o host
+    # "HOST_PORT:CONTAINER_PORT"
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}" # Mapeia a porta 5432 do container para a porta 5432 do WSL/host (se definida no .env)
+    # Define um volume para persistir os dados do PostgreSQL
+    # Isso significa que os dados do banco não serão perdidos se o container for removido
+    volumes:
+      - db_data:/var/lib/postgresql/data # Mapeia um volume nomeado 'db_data' para o diretório de dados do PostgreSQL
+    # Define um healthcheck para o Docker Compose saber quando o PostgreSQL está pronto
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# Define os volumes nomeados que serão usados pelos serviços
+volumes: 
+  db_data: # Volume nomeado para o PostgreSQL
