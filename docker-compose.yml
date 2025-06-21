@@ -1,5 +1,5 @@
 # version: '3.8' # Versão da especificação do Docker Compose
-# Remover a linha 'version: '3.8'' pois está obsoleta e deu o aviso: WARN[0000] /home/denilsonbj/projetos/docker_teste/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+# Remover a linha 'version: '3.8'' pois está obsoleta e deu o aviso: WARN[0000] /home/meu/caminho/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
 
 # Define os serviços (containers) que compõem sua aplicação
 services:
